@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera Admin Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(86, 171, 47, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(255, 65, 108, 0.3);
+        }
+
+        .btn-edit {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+
+        .search-box {
+            flex: 1;
+            padding: 12px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            animation: modalSlideIn 0.3s ease;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        @keyframes modalSlideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .close {
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .close:hover {
+            transform: scale(1.1);
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-input-label {
+            padding: 12px;
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: block;
+        }
+
+        .file-input-label:hover {
+            background: #e9ecef;
+            border-color: #667eea;
+        }
+
+        .cameras-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .camera-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 2px solid #f0f0f0;
+        }
+
+        .camera-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+            border-color: #667eea;
+        }
+
+        .camera-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: linear-gradient(45deg, #f0f0f0 25%, transparent 25%, transparent 75%, #f0f0f0 75%, #f0f0f0),
+                        linear-gradient(45deg, #f0f0f0 25%, transparent 25%, transparent 75%, #f0f0f0 75%, #f0f0f0);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+        }
+
+        .camera-info {
+            padding: 20px;
+        }
+
+        .camera-info h3 {
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 1.3rem;
+        }
+
+        .camera-info p {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .camera-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .alert-error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .stat-label {
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .actions {
+                flex-direction: column;
+            }
+            
+            .cameras-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎥 Camera Admin Panel</h1>
+            <p>Kameralarni boshqarish va monitor qilish tizimi</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Statistika -->
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalCameras">-</div>
+                    <div class="stat-label">Jami Kameralar</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="activeCameras">-</div>
+                    <div class="stat-label">Faol Kameralar</div>
+                </div>
+            </div>
+
+            <!-- Harakatlar -->
+            <div class="actions">
+                <button class="btn btn-primary" onclick="openAddModal()">
+                    ➕ Yangi Kamera Qo'shish
+                </button>
+                <button class="btn btn-success" onclick="loadCameras()">
+                    🔄 Yangilash
+                </button>
+                <input type="text" class="search-box" placeholder="🔍 Kamera qidirish..." onkeyup="searchCameras(this.value)">
+            </div>
+
+            <!-- Xabarlar -->
+            <div id="alertContainer"></div>
+
+            <!-- Kameralar ro'yxati -->
+            <div id="camerasContainer">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Kameralar yuklanmoqda...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal oyna -->
+    <div id="cameraModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Yangi Kamera</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="cameraForm">
+                    <div class="form-group">
+                        <label for="cameraName">Kamera Nomi *</label>
+                        <input type="text" id="cameraName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cameraTitle">Kamera Title *</label>
+                        <input type="text" id="cameraTitle" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cameraDescription">Tavsif</label>
+                        <textarea id="cameraDescription" placeholder="Kamera haqida qo'shimcha ma'lumot..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Kamera Rasimi *</label>
+                        <div class="file-input-wrapper">
+                            <input type="file" id="cameraImage" accept="image/*">
+                            <label for="cameraImage" class="file-input-label">
+                                📁 Rasm tanlang (JPG, PNG, GIF, WEBP)
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">
+                            💾 Saqlash
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global o'zgaruvchilar
+        const API_BASE_URL = 'http://localhost:3000/api/cameras';
+        let cameras = [];
+        let currentEditId = null;
+
+        // Sahifa yuklanganda
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCameras();
+            
+            // File input label ni yangilash
+            document.getElementById('cameraImage').addEventListener('change', function(e) {
+                const label = document.querySelector('.file-input-label');
+                if (e.target.files.length > 0) {
+                    label.textContent = `✅ ${e.target.files[0].name}`;
+                    label.style.color = '#28a745';
+                } else {
+                    label.textContent = '📁 Rasm tanlang (JPG, PNG, GIF, WEBP)';
+                    label.style.color = '';
+                }
+            });
+
+            // Form submit
+            document.getElementById('cameraForm').addEventListener('submit', handleFormSubmit);
+        });
+
+        // Kameralarni yuklash
+        async function loadCameras() {
+            try {
+                showLoading();
+                const response = await fetch(API_BASE_URL);
+                const result = await response.json();
+                
+                if (result.success) {
+                    cameras = result.data;
+                    displayCameras(cameras);
+                    updateStats();
+                } else {
+                    showAlert('Kameralarni yuklashda xatolik: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showAlert('Server bilan bog\'lanishda xatolik: ' + error.message, 'error');
+                console.error('Xatolik:', error);
+            }
+        }
+
+        // Kameralarni ko'rsatish
+        function displayCameras(camerasToShow) {
+            const container = document.getElementById('camerasContainer');
+            
+            if (camerasToShow.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <h3>🎥 Kameralar topilmadi</h3>
+                        <p>Yangi kamera qo'shish uchun yuqoridagi tugmani bosing</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const camerasHTML = camerasToShow.map(camera => `
+                <div class="camera-card">
+                    <img src="${camera.imageUrl || 'https://via.placeholder.com/300x200?text=No+Image'}" 
+                         alt="${camera.name}" 
+                         class="camera-image"
+                         onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
+                    <div class="camera-info">
+                        <h3>${camera.name}</h3>
+                        <p><strong>Title:</strong> ${camera.title}</p>
+                        ${camera.description ? `<p><strong>Tavsif:</strong> ${camera.description}</p>` : ''}
+                        <p><strong>Status:</strong> 
+                            <span style="color: ${camera.isActive ? '#28a745' : '#dc3545'}">
+                                ${camera.isActive ? '✅ Faol' : '❌ Nofaol'}
+                            </span>
+                        </p>
+                        <p><strong>Yaratilgan:</strong> ${new Date(camera.createdAt).toLocaleDateString('uz-UZ')}</p>
+                        <div class="camera-actions">
+                            <button class="btn btn-edit" onclick="editCamera('${camera._id}')">
+                                ✏️ Tahrirlash
+                            </button>
+                            <button class="btn btn-danger" onclick="deleteCamera('${camera._id}', '${camera.name}')">
+                                🗑️ O'chirish
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = `<div class="cameras-grid">${camerasHTML}</div>`;
+        }
+
+        // Statistikani yangilash
+        function updateStats() {
+            document.getElementById('totalCameras').textContent = cameras.length;
+            document.getElementById('activeCameras').textContent = cameras.filter(c => c.isActive).length;
+        }
+
+        // Kameralarni qidirish
+        function searchCameras(query) {
+            if (!query.trim()) {
+                displayCameras(cameras);
+                return;
+            }
+
+            const filtered = cameras.filter(camera => 
+                camera.name.toLowerCase().includes(query.toLowerCase()) ||
+                camera.title.toLowerCase().includes(query.toLowerCase()) ||
+                (camera.description && camera.description.toLowerCase().includes(query.toLowerCase()))
+            );
+
+            displayCameras(filtered);
+        }
+
+        // Yangi kamera qo'shish modali
+        function openAddModal() {
+            currentEditId = null;
+            document.getElementById('modalTitle').textContent = 'Yangi Kamera Qo\'shish';
+            document.getElementById('cameraForm').reset();
+            document.querySelector('.file-input-label').textContent = '📁 Rasm tanlang (JPG, PNG, GIF, WEBP)';
+            document.querySelector('.file-input-label').style.color = '';
+            document.getElementById('cameraModal').style.display = 'block';
+        }
+
+        // Kamerani tahrirlash
+        async function editCamera(id) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/${id}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    const camera = result.data;
+                    currentEditId = id;
+                    
+                    document.getElementById('modalTitle').textContent = 'Kamerani Tahrirlash';
+                    document.getElementById('cameraName').value = camera.name;
+                    document.getElementById('cameraTitle').value = camera.title;
+                    document.getElementById('cameraDescription').value = camera.description || '';
+                    
+                    document.querySelector('.file-input-label').textContent = '📁 Yangi rasm tanlang (ixtiyoriy)';
+                    document.getElementById('cameraModal').style.display = 'block';
+                } else {
+                    showAlert('Kamerani yuklashda xatolik: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showAlert('Xatolik: ' + error.message, 'error');
+            }
+        }
+
+        // Kamerani o'chirish
+        async function deleteCamera(id, name) {
+            if (!confirm(`"${name}" kamerasini o'chirishni xohlaysizmi?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('Kamera muvaffaqiyatli o\'chirildi!', 'success');
+                    loadCameras();
+                } else {
+                    showAlert('Xatolik: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showAlert('Xatolik: ' + error.message, 'error');
+            }
+        }
+
+        // Formani yuborish
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('name', document.getElementById('cameraName').value);
+            formData.append('title', document.getElementById('cameraTitle').value);
+            formData.append('description', document.getElementById('cameraDescription').value);
+            
+            const imageFile = document.getElementById('cameraImage').files[0];
+            if (imageFile) {
+                formData.append('image', imageFile);
+            } else if (!currentEditId) {
+                showAlert('Iltimos, rasm tanlang!', 'error');
+                return;
+            }
+
+            try {
+                const url = currentEditId ? `${API_BASE_URL}/${currentEditId}` : API_BASE_URL;
+                const method = currentEditId ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert(
+                        currentEditId ? 'Kamera muvaffaqiyatli yangilandi!' : 'Kamera muvaffaqiyatli qo\'shildi!', 
+                        'success'
+                    );
+                    closeModal();
+                    loadCameras();
+                } else {
+                    showAlert('Xatolik: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showAlert('Xatolik: ' + error.message, 'error');
+            }
+        }
+
+        // Modalni yopish
+        function closeModal() {
+            document.getElementById('cameraModal').style.display = 'none';
+            currentEditId = null;
+        }
+
+        // Loading ko'rsatish
+        function showLoading() {
+            document.getElementById('camerasContainer').innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Kameralar yuklanmoqda...</p>
+                </div>
+            `;
+        }
+
+        // Xabar ko'rsatish
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            
+            alertContainer.appendChild(alertDiv);
+            
+            // 5 soniyadan keyin o'chirish
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+
+        // Modal tashqarisini bosib yopish
+        window.onclick = function(event) {
+            const modal = document.getElementById('cameraModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>
